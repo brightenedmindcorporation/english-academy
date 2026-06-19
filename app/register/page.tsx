@@ -12,41 +12,41 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      // 1. CREATE AUTH USER
-      const userCred = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+    console.log("STEP 1 - Starting registration");
 
-      const user = userCred.user;
+    const userCred = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
-      // 2. CREATE STUDENT IN FIRESTORE (ADMIN PANEL READS THIS)
-      await setDoc(doc(db, "students", user.uid), {
-        uid: user.uid,
-        name,
-        email,
-        level: "Level 1",
+    console.log("STEP 2 - User created");
 
-        // 🔥 IMPORTANT FOR ADMIN PANEL
-        status: "pending",
+    const user = userCred.user;
 
-        matricule: "",
+    await setDoc(doc(db, "students", user.uid), {
+      uid: user.uid,
+      name,
+      email,
+      level: "Level 1",
+      status: "pending",
+      matricule: "",
+      createdAt: new Date(),
+    });
 
-        createdAt: new Date(),
-      });
+    console.log("STEP 3 - Firestore document created");
 
-      alert("Account created! Waiting for admin approval.");
-    } catch (error: any) {
-      console.error(error);
-      alert(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    alert("Account created!");
+  } catch (error: any) {
+    console.error("REGISTER ERROR:", error);
+    alert(error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-red-50">
