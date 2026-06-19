@@ -15,6 +15,7 @@ export default function Register() {
     try {
       setLoading(true);
 
+      // 1. CREATE AUTH USER
       const userCred = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -23,16 +24,24 @@ export default function Register() {
 
       const user = userCred.user;
 
+      // 2. CREATE STUDENT IN FIRESTORE (ADMIN PANEL READS THIS)
       await setDoc(doc(db, "students", user.uid), {
         uid: user.uid,
         name,
         email,
         level: "Level 1",
+
+        // 🔥 IMPORTANT FOR ADMIN PANEL
+        status: "pending",
+
+        matricule: "",
+
         createdAt: new Date(),
       });
 
-      alert("Account created!");
+      alert("Account created! Waiting for admin approval.");
     } catch (error: any) {
+      console.error(error);
       alert(error.message);
     } finally {
       setLoading(false);
@@ -40,7 +49,7 @@ export default function Register() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center">
+    <main className="min-h-screen flex items-center justify-center bg-red-50">
       <div className="bg-white p-6 rounded-xl shadow w-96">
 
         <h1 className="text-xl font-bold mb-4 text-black">
@@ -69,6 +78,7 @@ export default function Register() {
         <button
           onClick={handleRegister}
           className="bg-red-600 text-white w-full p-2"
+          disabled={loading}
         >
           {loading ? "Creating..." : "Register"}
         </button>
