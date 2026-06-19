@@ -11,11 +11,7 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// ❗ DEBUG (tu peux enlever après)
-console.log("🔥 Firebase init:", firebaseConfig);
-
 const app = initializeApp(firebaseConfig);
 
-// ✅ EXPORTS OBLIGATOIRES
 export const auth = getAuth(app);
 export const db = getFirestore(app);

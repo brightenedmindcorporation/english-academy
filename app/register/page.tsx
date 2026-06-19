@@ -4,7 +4,6 @@ import { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
-import { useRouter } from "next/navigation";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -12,13 +11,9 @@ export default function Register() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const router = useRouter();
-
   const handleRegister = async () => {
     try {
       setLoading(true);
-
-      console.log("➡️ Creating user...");
 
       const userCred = await createUserWithEmailAndPassword(
         auth,
@@ -28,25 +23,16 @@ export default function Register() {
 
       const user = userCred.user;
 
-      console.log("✅ USER CREATED:", user.uid);
-
       await setDoc(doc(db, "students", user.uid), {
         uid: user.uid,
         name,
         email,
         level: "Level 1",
-        status: "Pending",
-        matricule: "",
         createdAt: new Date(),
       });
 
-      console.log("🔥 WRITTEN TO FIRESTORE");
-
       alert("Account created!");
-
-      router.push("/dashboard");
     } catch (error: any) {
-      console.error("❌ REGISTER ERROR:", error);
       alert(error.message);
     } finally {
       setLoading(false);
@@ -54,7 +40,7 @@ export default function Register() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-red-50">
+    <main className="min-h-screen flex items-center justify-center">
       <div className="bg-white p-6 rounded-xl shadow w-96">
 
         <h1 className="text-xl font-bold mb-4 text-black">
@@ -83,7 +69,6 @@ export default function Register() {
         <button
           onClick={handleRegister}
           className="bg-red-600 text-white w-full p-2"
-          disabled={loading}
         >
           {loading ? "Creating..." : "Register"}
         </button>
