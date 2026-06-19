@@ -29,10 +29,15 @@ export default function Register() {
         email,
         level: "Level 1",
         matricule: "",
+        status: "Pending",
         createdAt: new Date(),
       });
 
-      alert("Account created!");
+      alert("Account created successfully!");
+
+      setName("");
+      setEmail("");
+      setPassword("");
     } catch (error: any) {
       alert(error.message);
     }
@@ -41,37 +46,59 @@ export default function Register() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center">
-      <div className="bg-white p-6 rounded-xl shadow w-96">
+    <main className="min-h-screen bg-red-50 flex items-center justify-center p-6">
+      <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md">
 
-        <h1 className="text-xl font-bold mb-4">
-          Student Register
+        <h1 className="text-3xl font-bold text-red-800 text-center mb-2">
+          Student Registration
         </h1>
 
-        <input
-          placeholder="Full name"
-          className="border p-2 w-full mb-2"
-          onChange={(e) => setName(e.target.value)}
-        />
+        <p className="text-center text-gray-700 mb-6">
+          Brightened Mind Corporation Academy
+        </p>
+
+        <label className="block mb-2 font-medium text-black">
+          Full Name
+        </label>
 
         <input
-          placeholder="Email"
-          className="border p-2 w-full mb-2"
-          onChange={(e) => setEmail(e.target.value)}
+          type="text"
+          placeholder="Enter your full name"
+          className="w-full border rounded-xl p-3 text-black bg-white placeholder-gray-500 mb-4"
+          onChange={(e) => setName(e.target.value)}
+          value={name}
         />
+
+        <label className="block mb-2 font-medium text-black">
+          Email Address
+        </label>
+
+        <input
+          type="email"
+          placeholder="Enter your email"
+          className="w-full border rounded-xl p-3 text-black bg-white placeholder-gray-500 mb-4"
+          onChange={(e) => setEmail(e.target.value)}
+          value={email}
+        />
+
+        <label className="block mb-2 font-medium text-black">
+          Password
+        </label>
 
         <input
           type="password"
-          placeholder="Password"
-          className="border p-2 w-full mb-2"
+          placeholder="Create a password"
+          className="w-full border rounded-xl p-3 text-black bg-white placeholder-gray-500 mb-6"
           onChange={(e) => setPassword(e.target.value)}
+          value={password}
         />
 
         <button
           onClick={handleRegister}
-          className="bg-red-600 text-white w-full p-2"
+          disabled={loading}
+          className="bg-red-700 hover:bg-red-800 text-white w-full p-3 rounded-xl font-semibold"
         >
-          {loading ? "Loading..." : "Register"}
+          {loading ? "Creating Account..." : "Register"}
         </button>
 
       </div>

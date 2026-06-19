@@ -20,29 +20,42 @@ export default function Login() {
   };
 
   return (
-    <main className="flex justify-center items-center min-h-screen">
-      <div className="bg-white p-6 shadow rounded w-96">
+    <main className="min-h-screen bg-red-50 flex justify-center items-center p-6">
+      <div className="bg-white p-8 shadow-xl rounded-3xl w-full max-w-md">
 
-        <h1 className="text-xl font-bold mb-4">
-          Login
+        <h1 className="text-3xl font-bold text-red-800 text-center mb-2">
+          Student Login
         </h1>
 
+        <p className="text-center text-gray-700 mb-6">
+          Brightened Mind Corporation Academy
+        </p>
+
+        <label className="block mb-2 font-medium text-black">
+          Email Address
+        </label>
+
         <input
-          placeholder="Email"
-          className="border p-2 w-full mb-2"
+          type="email"
+          placeholder="Enter your email"
+          className="w-full border rounded-xl p-3 text-black bg-white placeholder-gray-500 mb-4"
           onChange={(e) => setEmail(e.target.value)}
         />
 
+        <label className="block mb-2 font-medium text-black">
+          Password
+        </label>
+
         <input
           type="password"
-          placeholder="Password"
-          className="border p-2 w-full mb-2"
+          placeholder="Enter your password"
+          className="w-full border rounded-xl p-3 text-black bg-white placeholder-gray-500 mb-6"
           onChange={(e) => setPassword(e.target.value)}
         />
 
         <button
           onClick={handleLogin}
-          className="bg-green-600 text-white w-full p-2"
+          className="bg-red-700 hover:bg-red-800 text-white w-full p-3 rounded-xl font-semibold"
         >
           Login
         </button>
