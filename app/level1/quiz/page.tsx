@@ -1,146 +1,149 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { db } from "@/lib/firebase";
+import { addDoc, collection } from "firebase/firestore";
 
 export default function QuizPage() {
-  const [answers, setAnswers] =
-    useState<any>({});
+  const [answers, setAnswers] = useState<any>({});
+  const [score, setScore] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [studentMatricule, setStudentMatricule] = useState("");
 
-  const [score, setScore] =
-    useState<number | null>(null);
+  useEffect(() => {
+    const m = localStorage.getItem("studentMatricule") || "UNKNOWN";
+    setStudentMatricule(m);
+  }, []);
 
   const questions = [
     {
       id: 1,
-      question:
-        "What is 'Good Morning' in French?",
-      options: [
-        "Bonsoir",
-        "Bonjour",
-        "Bonne nuit",
-      ],
+      question: "What is 'Good Morning' in French?",
+      options: ["Bonsoir", "Bonjour", "Bonne nuit"],
       correct: "Bonjour",
     },
     {
       id: 2,
-      question:
-        "How do you say 'Thank you' in English?",
-      options: [
-        "Hello",
-        "Please",
-        "Thank you",
-      ],
+      question: "How do you say 'Thank you' in English?",
+      options: ["Hello", "Please", "Thank you"],
       correct: "Thank you",
     },
     {
       id: 3,
-      question:
-        "Choose the correct greeting:",
-      options: [
-        "Good Morning",
-        "Table",
-        "Chair",
-      ],
+      question: "Choose the correct greeting:",
+      options: ["Good Morning", "Table", "Chair"],
       correct: "Good Morning",
     },
   ];
 
-  const handleSubmit = () => {
-    let total = 0;
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
 
-    questions.forEach((q) => {
-      if (
-        answers[q.id] === q.correct
-      ) {
-        total++;
-      }
-    });
+      let total = 0;
 
-    setScore(total);
+      questions.forEach((q) => {
+        if (answers[q.id] === q.correct) {
+          total++;
+        }
+      });
 
-    if (total >= 2) {
-      localStorage.setItem(
-        "level1Completed",
-        "true"
-      );
+      setScore(total);
+
+      const passed = total >= 2;
+
+      // 🔥 SAVE QUIZ LINKED TO STUDENT
+      await addDoc(collection(db, "quizResults"), {
+        studentMatricule,
+        level: "Level 1",
+        lesson: "Quiz 1",
+        score: total,
+        total: questions.length,
+        passed,
+        createdAt: new Date(),
+      });
+
+      alert("Quiz saved for " + studentMatricule);
+
+    } catch (error) {
+      console.error("Quiz error:", error);
+      alert("Error saving quiz");
     }
+
+    setLoading(false);
   };
 
   return (
     <main className="min-h-screen bg-red-50 p-8">
-      <div className="bg-white rounded-3xl shadow-xl p-8 max-w-3xl mx-auto">
-        <h1 className="text-4xl font-bold text-red-800 text-center">
+
+      <div className="max-w-3xl mx-auto bg-white p-8 rounded-3xl shadow-xl">
+
+        <h1 className="text-3xl font-bold text-red-800 text-center">
           Level 1 Quiz
         </h1>
 
         <p className="text-center text-gray-600 mt-2">
-          Answer the questions below
+          Student: <b>{studentMatricule}</b>
         </p>
 
         <div className="mt-8 space-y-8">
+
           {questions.map((q) => (
-            <div
-              key={q.id}
-              className="border rounded-2xl p-6"
-            >
-              <h2 className="text-xl font-bold text-black">
+            <div key={q.id} className="border p-5 rounded-xl">
+
+              <h2 className="font-bold text-black">
                 {q.question}
               </h2>
 
-              <div className="mt-4 space-y-3">
-                {q.options.map(
-                  (option) => (
-                    <label
-                      key={option}
-                      className="flex items-center gap-3 text-black"
-                    >
-                      <input
-                        type="radio"
-                        name={`question-${q.id}`}
-                        value={option}
-                        onChange={() =>
-                          setAnswers({
-                            ...answers,
-                            [q.id]:
-                              option,
-                          })
-                        }
-                      />
+              <div className="mt-3 space-y-2">
+                {q.options.map((opt) => (
+                  <label key={opt} className="block text-black">
 
-                      {option}
-                    </label>
-                  )
-                )}
+                    <input
+                      type="radio"
+                      name={`q-${q.id}`}
+                      onChange={() =>
+                        setAnswers({
+                          ...answers,
+                          [q.id]: opt,
+                        })
+                      }
+                    />
+
+                    {" "}{opt}
+                  </label>
+                ))}
               </div>
+
             </div>
           ))}
+
         </div>
 
         <button
           onClick={handleSubmit}
-          className="w-full bg-red-700 text-white py-4 rounded-2xl mt-8 font-semibold text-lg"
+          disabled={loading}
+          className="w-full bg-red-700 text-white py-3 rounded-xl mt-6"
         >
-          Submit Quiz
+          {loading ? "Saving..." : "Submit Quiz"}
         </button>
 
         {score !== null && (
-          <div className="mt-8 text-center">
-            <h2 className="text-3xl font-bold text-green-600">
-              Score: {score}/3
+          <div className="mt-6 text-center">
+            <h2 className="text-2xl font-bold text-green-600">
+              Score: {score}/{questions.length}
             </h2>
 
             {score >= 2 ? (
-              <p className="text-green-700 font-semibold mt-3">
-                Congratulations! You completed Level 1.
-              </p>
+              <p className="text-green-700">Passed</p>
             ) : (
-              <p className="text-red-600 font-semibold mt-3">
-                You did not pass. Try again.
-              </p>
+              <p className="text-red-600">Failed</p>
             )}
           </div>
         )}
+
       </div>
+
     </main>
   );
 }

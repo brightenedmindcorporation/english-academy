@@ -1,131 +1,79 @@
 "use client";
 
 import { useState } from "react";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "@/lib/firebase";
+import { doc, setDoc } from "firebase/firestore";
 
-export default function RegisterPage() {
-  const [name, setName] = useState("");
+export default function Register() {
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [level, setLevel] = useState("Level 1");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleRegister = () => {
-    const existingStudents = JSON.parse(
-      localStorage.getItem("students") || "[]"
-    );
+  const handleRegister = async () => {
+    try {
+      setLoading(true);
 
-    const newStudent = {
-      id: existingStudents.length + 1,
-      name,
-      email,
-      phone,
-      level,
-      status: "Pending",
-      matricule: "",
-    };
+      const userCred = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
-    const updatedStudents = [
-      ...existingStudents,
-      newStudent,
-    ];
+      const user = userCred.user;
 
-    localStorage.setItem(
-      "students",
-      JSON.stringify(updatedStudents)
-    );
+      await setDoc(doc(db, "students", user.uid), {
+        uid: user.uid,
+        name,
+        email,
+        level: "Level 1",
+        matricule: "",
+        createdAt: new Date(),
+      });
 
-    alert("Student registered successfully!");
+      alert("Account created!");
+    } catch (error: any) {
+      alert(error.message);
+    }
 
-    setName("");
-    setEmail("");
-    setPhone("");
-    setLevel("Level 1");
+    setLoading(false);
   };
 
   return (
-    <main className="min-h-screen bg-red-50 flex items-center justify-center p-6">
-      <div className="bg-white shadow-xl rounded-3xl p-10 w-full max-w-lg">
-        <h1 className="text-3xl font-bold text-red-800 text-center">
-          Student Registration
+    <main className="min-h-screen flex items-center justify-center">
+      <div className="bg-white p-6 rounded-xl shadow w-96">
+
+        <h1 className="text-xl font-bold mb-4">
+          Student Register
         </h1>
 
-        <p className="text-center text-gray-600 mt-2 text-black">
-          Brightened Mind Corporation Academy
-        </p>
+        <input
+          placeholder="Full name"
+          className="border p-2 w-full mb-2"
+          onChange={(e) => setName(e.target.value)}
+        />
 
-        <div className="mt-8 space-y-5">
-          <div>
-            <label className="block font-medium text-gray-700">
-              Full Name
-            </label>
+        <input
+          placeholder="Email"
+          className="border p-2 w-full mb-2"
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-            <input
-              type="text"
-              placeholder="Enter full name"
-              value={name}
-              onChange={(e) =>
-                setName(e.target.value)
-              }
-              className="w-full border rounded-xl p-3 mt-2 text-black"
-            />
-          </div>
+        <input
+          type="password"
+          placeholder="Password"
+          className="border p-2 w-full mb-2"
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-          <div>
-            <label className="block font-medium text-gray-700">
-              Email Address
-            </label>
+        <button
+          onClick={handleRegister}
+          className="bg-red-600 text-white w-full p-2"
+        >
+          {loading ? "Loading..." : "Register"}
+        </button>
 
-            <input
-              type="email"
-              placeholder="Enter email"
-              value={email}
-              onChange={(e) =>
-                setEmail(e.target.value)
-              }
-              className="w-full border rounded-xl p-3 mt-2 text-black"
-            />
-          </div>
-
-          <div>
-            <label className="block font-medium text-gray-700">
-              Phone Number
-            </label>
-
-            <input
-              type="tel"
-              placeholder="Enter phone number"
-              value={phone}
-              onChange={(e) =>
-                setPhone(e.target.value)
-              }
-              className="w-full border rounded-xl p-3 mt-2 text-black"
-            />
-          </div>
-
-          <div>
-            <label className="block font-medium text-gray-700">
-              Choose Level
-            </label>
-
-            <select
-              value={level}
-              onChange={(e) =>
-                setLevel(e.target.value)
-              }
-              className="w-full border rounded-xl p-3 mt-2 text-black"
-            >
-              <option>Level 1</option>
-              <option>Level 2</option>
-              <option>Level 3</option>
-            </select>
-          </div>
-
-          <button
-            onClick={handleRegister}
-            className="w-full bg-red-700 text-white py-3 rounded-xl font-semibold text-lg"
-          >
-            Register Student
-          </button>
-        </div>
       </div>
     </main>
   );

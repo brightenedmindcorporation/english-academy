@@ -1,144 +1,124 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { db } from "@/lib/firebase";
+import {
+  collection,
+  getDocs,
+  updateDoc,
+  doc,
+} from "firebase/firestore";
 
 export default function AdminPage() {
-  const [students, setStudents] =
-  useState<any[]>([]);
+  const [students, setStudents] = useState<any[]>([]);
 
-useEffect(() => {
-  const savedStudents =
-    JSON.parse(
-      localStorage.getItem("students") || "[]"
+  const fetchStudents = async () => {
+    const snapshot = await getDocs(collection(db, "students"));
+
+    setStudents(
+      snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
     );
-
-  setStudents(savedStudents);
-}, []);
-
-  const generateMatricule = (id: number) => {
-    return `BMCA-2026-${String(id).padStart(3, "0")}`;
   };
 
- const updateStatus = (
-  id: number,
-  newStatus: string
-) => {
-  const updatedStudents = students.map(
-    (student) => {
-      if (student.id === id) {
-        return {
-          ...student,
-          status: newStatus,
-          matricule:
-            newStatus === "Approved"
-              ? generateMatricule(id)
-              : student.matricule,
-        };
-      }
+  useEffect(() => {
+    fetchStudents();
+  }, []);
 
-      return student;
-    }
-  );
+  // 🔥 generate matricule
+  const generateMatricule = (index: number) => {
+  const year = new Date().getFullYear();
+  const number = String(index).padStart(3, "0");
 
-  setStudents(updatedStudents);
-
-  localStorage.setItem(
-    "students",
-    JSON.stringify(updatedStudents)
-  );
+  return `BMCA-${year}-${number}`;
 };
 
+  // 📧 send email
+  const sendEmail = async (email: string, name: string, matricule: string) => {
+    await fetch("/api/send-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        name,
+        matricule,
+      }),
+    });
+  };
+
+  // ✅ APPROVE
+  const approveStudent = async (student: any, index: number) => {
+  try {
+    const matricule = generateMatricule(index + 1);
+
+    await updateDoc(doc(db, "students", student.id), {
+      status: "Approved",
+      matricule,
+    });
+
+    await sendEmail(student.email, student.name, matricule);
+
+    alert("Approved + Email sent!");
+    fetchStudents();
+  } catch (error) {
+    console.error(error);
+    alert("Error approving student");
+  }
+};
+
+  // ❌ REJECT
+  const rejectStudent = async (student: any) => {
+    try {
+      await updateDoc(doc(db, "students", student.id), {
+        status: "Rejected",
+      });
+
+      alert("Rejected!");
+      fetchStudents();
+    } catch (error) {
+      console.error(error);
+      alert("Error rejecting student");
+    }
+  };
+
   return (
-    <main className="min-h-screen bg-red-50 p-8">
-      <div className="bg-red-800 text-white rounded-3xl p-8 shadow-xl">
-        <h1 className="text-4xl font-bold">
-          Admin Dashboard
-        </h1>
+    <main className="p-10 bg-gray-100 min-h-screen text-black">
 
-        <p className="mt-2 text-red-100">
-          Brightened Mind Corporation Academy
-        </p>
-      </div>
+      <h1 className="text-3xl font-bold mb-6">
+        Admin Panel
+      </h1>
 
-      <div className="bg-white rounded-3xl shadow-xl p-8 mt-10">
-        <h2 className="text-3xl font-bold text-red-800 mb-6">
-          Students List
-        </h2>
+      {students.map((s) => (
+        <div key={s.id} className="bg-white p-5 mb-4 rounded-xl shadow">
 
-        <div className="space-y-5">
-          {students.map((student) => (
-            <div
-              key={student.id}
-              className="border rounded-2xl p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+          <p><b>Name:</b> {s.name}</p>
+          <p><b>Email:</b> {s.email}</p>
+          <p><b>Status:</b> {s.status}</p>
+          <p><b>Matricule:</b> {s.matricule || "-"}</p>
+
+          <div className="flex gap-3 mt-4">
+
+            <button
+  onClick={() => approveStudent(s, students.indexOf(s))}
+  className="bg-green-600 text-white px-4 py-2 rounded"
+>
+  Approve
+</button>
+
+            <button
+              onClick={() => rejectStudent(s)}
+              className="bg-red-600 text-white px-4 py-2 rounded"
             >
-              <div>
-                <h3 className="text-xl font-bold text-gray-800">
-                  {student.name}
-                </h3>
+              Reject
+            </button>
 
-                <p className="text-gray-600">
-                  {student.level}
-                </p>
+          </div>
 
-                <p className="text-gray-600">
-                  {student.email}
-                </p>
-
-                <p className="text-gray-600">
-                  {student.phone}
-                </p>
-
-                <p className="font-medium text-gray-700">
-                  Matricule:
-                  {" "}
-                  {student.matricule ||
-                    "Not assigned"}
-                </p>
-
-                <p
-                  className={`font-semibold ${
-                    student.status ===
-                    "Approved"
-                      ? "text-green-600"
-                      : student.status ===
-                        "Rejected"
-                      ? "text-red-600"
-                      : "text-orange-500"
-                  }`}
-                >
-                  {student.status}
-                </p>
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() =>
-                    updateStatus(
-                      student.id,
-                      "Approved"
-                    )
-                  }
-                  className="bg-green-600 text-white px-5 py-2 rounded-xl font-semibold"
-                >
-                  Approve
-                </button>
-
-                <button
-                  onClick={() =>
-                    updateStatus(
-                      student.id,
-                      "Rejected"
-                    )
-                  }
-                  className="bg-red-700 text-white px-5 py-2 rounded-xl font-semibold"
-                >
-                  Reject
-                </button>
-              </div>
-            </div>
-          ))}
         </div>
-      </div>
+      ))}
+
     </main>
   );
 }

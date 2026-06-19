@@ -1,97 +1,52 @@
 "use client";
 
 import { useState } from "react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import { loginStudent } from "../../lib/auth";
 
-export default function LoginPage() {
+export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
-  const [matricule, setMatricule] =
-    useState("");
-  const [error, setError] = useState("");
-
-  const handleLogin = () => {
-    const student = loginStudent(
-      email,
-      matricule
-    );
-
-    if (!student) {
-      setError(
-        "Invalid credentials or account not approved."
-      );
-      return;
+  const handleLogin = async () => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push("/dashboard");
+    } catch (error: any) {
+      alert(error.message);
     }
-
-    localStorage.setItem(
-      "loggedStudent",
-      JSON.stringify(student)
-    );
-
-    router.push("/dashboard");
   };
 
   return (
-    <main className="min-h-screen bg-red-50 flex items-center justify-center p-6">
-      <div className="bg-white shadow-xl rounded-3xl p-10 w-full max-w-lg">
-        <h1 className="text-3xl font-bold text-red-800 text-center">
-          Student Login
+    <main className="flex justify-center items-center min-h-screen">
+      <div className="bg-white p-6 shadow rounded w-96">
+
+        <h1 className="text-xl font-bold mb-4">
+          Login
         </h1>
 
-        <p className="text-center text-gray-600 mt-2 text-black">
-          Brightened Mind Corporation Academy
-        </p>
+        <input
+          placeholder="Email"
+          className="border p-2 w-full mb-2"
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-        <div className="mt-8 space-y-5">
-          <div>
-            <label className="block font-medium text-gray-700">
-              Email Address
-            </label>
+        <input
+          type="password"
+          placeholder="Password"
+          className="border p-2 w-full mb-2"
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-            <input
-              type="email"
-              placeholder="Enter email"
-              value={email}
-              onChange={(e) =>
-                setEmail(e.target.value)
-              }
-              className="w-full border rounded-xl p-3 mt-2 text-black"
-            />
-          </div>
+        <button
+          onClick={handleLogin}
+          className="bg-green-600 text-white w-full p-2"
+        >
+          Login
+        </button>
 
-          <div>
-            <label className="block font-medium text-gray-700">
-              Matricule
-            </label>
-
-            <input
-              type="text"
-              placeholder="Enter matricule"
-              value={matricule}
-              onChange={(e) =>
-                setMatricule(
-                  e.target.value
-                )
-              }
-              className="w-full border rounded-xl p-3 mt-2 text-black"
-            />
-          </div>
-
-          {error && (
-            <p className="text-red-600 text-center">
-              {error}
-            </p>
-          )}
-
-          <button
-            onClick={handleLogin}
-            className="w-full bg-red-700 text-white py-3 rounded-xl font-semibold text-lg"
-          >
-            Login
-          </button>
-        </div>
       </div>
     </main>
   );
