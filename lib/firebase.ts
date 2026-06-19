@@ -11,10 +11,7 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// 👇 AJOUT ICI
-console.log("🔥 FIREBASE API KEY =", process.env.NEXT_PUBLIC_FIREBASE_API_KEY);
+// 👇 ICI TU AJOUTES ÇA
+console.log("🔥 API KEY =", process.env.NEXT_PUBLIC_FIREBASE_API_KEY);
 
 const app = initializeApp(firebaseConfig);
-
-export const auth = getAuth(app);
-export const db = getFirestore(app);
