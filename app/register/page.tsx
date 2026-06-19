@@ -12,53 +12,28 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      console.log("CLICK REGISTER BUTTON");
-      alert("CLICKED");
-      console.log("🚀 START REGISTER");
+    console.log("STEP 1 START");
 
-      if (!name || !email || !password) {
-        alert("Please fill all fields");
-        setLoading(false);
-        return;
-      }
+    const userCred = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
-      const userCred = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+    console.log("STEP 2 USER CREATED", userCred.user.uid);
 
-      const user = userCred.user;
+    alert("SUCCESS");
 
-      console.log("✅ USER CREATED:", user.uid);
-
-      await setDoc(doc(db, "students", user.uid), {
-        uid: user.uid,
-        name,
-        email,
-        level: "Level 1",
-        status: "Pending",
-        matricule: "",
-        createdAt: new Date(),
-      });
-
-      alert("Account created successfully!");
-
-      setName("");
-      setEmail("");
-      setPassword("");
-
-    } catch (error: any) {
-      console.error("❌ REGISTER ERROR:", error);
-      alert(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  } catch (error: any) {
+    console.error("FIREBASE ERROR:", error.code, error.message);
+    alert(error.code);
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white p-6 rounded-xl shadow w-96">
