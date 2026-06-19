@@ -4,72 +4,88 @@ import { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
+import { useRouter } from "next/navigation";
 
 export default function Register() {
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const router = useRouter();
+
   const handleRegister = async () => {
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    console.log("STEP 1 START");
+      console.log("➡️ Creating user...");
 
-    const userCred = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
+      const userCred = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
-    console.log("STEP 2 USER CREATED", userCred.user.uid);
+      const user = userCred.user;
 
-    alert("SUCCESS");
+      console.log("✅ USER CREATED:", user.uid);
 
-  } catch (error: any) {
-    console.error("FIREBASE ERROR:", error.code, error.message);
-    alert(error.code);
-  } finally {
-    setLoading(false);
-  }
-};
+      await setDoc(doc(db, "students", user.uid), {
+        uid: user.uid,
+        name,
+        email,
+        level: "Level 1",
+        status: "Pending",
+        matricule: "",
+        createdAt: new Date(),
+      });
+
+      console.log("🔥 WRITTEN TO FIRESTORE");
+
+      alert("Account created!");
+
+      router.push("/dashboard");
+    } catch (error: any) {
+      console.error("❌ REGISTER ERROR:", error);
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-50">
+    <main className="min-h-screen flex items-center justify-center bg-red-50">
       <div className="bg-white p-6 rounded-xl shadow w-96">
 
-        <h1 className="text-2xl font-bold mb-4 text-black text-center">
-         Student Register
+        <h1 className="text-xl font-bold mb-4 text-black">
+          Student Register
         </h1>
 
         <input
           placeholder="Full name"
-          value={name}
+          className="w-full border p-2 mb-2 text-black"
           onChange={(e) => setName(e.target.value)}
-          className="w-full border p-3 mb-3 rounded text-black"
         />
 
         <input
           placeholder="Email"
-          value={email}
+          className="w-full border p-2 mb-2 text-black"
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border p-3 mb-3 rounded text-black"
         />
 
         <input
           type="password"
           placeholder="Password"
-          value={password}
+          className="w-full border p-2 mb-2 text-black"
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border p-3 mb-3 rounded text-black"
         />
 
         <button
           onClick={handleRegister}
+          className="bg-red-600 text-white w-full p-2"
           disabled={loading}
-          className="w-full bg-red-600 text-white p-3 rounded font-bold"
         >
-          {loading ? "Creating account..." : "Register"}
+          {loading ? "Creating..." : "Register"}
         </button>
 
       </div>
