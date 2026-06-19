@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
+export const dynamic = "force-dynamic";
 import {
   collection,
   getDocs,

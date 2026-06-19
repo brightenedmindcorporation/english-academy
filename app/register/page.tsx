@@ -6,14 +6,22 @@ import { auth, db } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 
 export default function Register() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
     try {
       setLoading(true);
+
+      console.log("🚀 START REGISTER");
+
+      if (!name || !email || !password) {
+        alert("Please fill all fields");
+        setLoading(false);
+        return;
+      }
 
       const userCred = await createUserWithEmailAndPassword(
         auth,
@@ -23,13 +31,15 @@ export default function Register() {
 
       const user = userCred.user;
 
+      console.log("✅ USER CREATED:", user.uid);
+
       await setDoc(doc(db, "students", user.uid), {
         uid: user.uid,
         name,
         email,
         level: "Level 1",
-        matricule: "",
         status: "Pending",
+        matricule: "",
         createdAt: new Date(),
       });
 
@@ -38,67 +48,51 @@ export default function Register() {
       setName("");
       setEmail("");
       setPassword("");
-    } catch (error: any) {
-      alert(error.message);
-    }
 
-    setLoading(false);
+    } catch (error: any) {
+      console.error("❌ REGISTER ERROR:", error);
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <main className="min-h-screen bg-red-50 flex items-center justify-center p-6">
-      <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md">
+    <main className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="bg-white p-6 rounded-xl shadow w-96">
 
-        <h1 className="text-3xl font-bold text-red-800 text-center mb-2">
-          Student Registration
+        <h1 className="text-xl font-bold mb-4 text-center">
+          Student Register
         </h1>
 
-        <p className="text-center text-gray-700 mb-6">
-          Brightened Mind Corporation Academy
-        </p>
-
-        <label className="block mb-2 font-medium text-black">
-          Full Name
-        </label>
-
         <input
-          type="text"
-          placeholder="Enter your full name"
-          className="w-full border rounded-xl p-3 text-black bg-white placeholder-gray-500 mb-4"
-          onChange={(e) => setName(e.target.value)}
+          placeholder="Full name"
           value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full border p-3 mb-3 rounded text-black"
         />
-
-        <label className="block mb-2 font-medium text-black">
-          Email Address
-        </label>
 
         <input
-          type="email"
-          placeholder="Enter your email"
-          className="w-full border rounded-xl p-3 text-black bg-white placeholder-gray-500 mb-4"
-          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
           value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full border p-3 mb-3 rounded text-black"
         />
-
-        <label className="block mb-2 font-medium text-black">
-          Password
-        </label>
 
         <input
           type="password"
-          placeholder="Create a password"
-          className="w-full border rounded-xl p-3 text-black bg-white placeholder-gray-500 mb-6"
-          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
           value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full border p-3 mb-3 rounded text-black"
         />
 
         <button
           onClick={handleRegister}
           disabled={loading}
-          className="bg-red-700 hover:bg-red-800 text-white w-full p-3 rounded-xl font-semibold"
+          className="w-full bg-red-600 text-white p-3 rounded font-bold"
         >
-          {loading ? "Creating Account..." : "Register"}
+          {loading ? "Creating account..." : "Register"}
         </button>
 
       </div>
