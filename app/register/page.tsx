@@ -28,14 +28,14 @@ export default function Register() {
     const user = userCred.user;
 
     await setDoc(doc(db, "students", user.uid), {
-      uid: user.uid,
-      name,
-      email,
-      level: "Level 1",
-      status: "pending",
-      matricule: "",
-      createdAt: new Date(),
-    });
+  uid: user.uid,
+  name,
+  email,
+  level: "Level 1",
+  status: "Pending",
+  matricule: "",
+  createdAt: new Date(),
+});
 
     console.log("STEP 3 - Firestore document created");
 
