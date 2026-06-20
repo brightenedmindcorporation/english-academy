@@ -10,12 +10,9 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [level, setLevel] = useState("Level 1");
-  const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
     try {
-      setLoading(true);
-
       const userCred = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -34,42 +31,41 @@ export default function Register() {
         createdAt: new Date(),
       });
 
-      alert("Student registered successfully!");
+      alert("Account created!");
     } catch (error: any) {
       alert(error.message);
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center">
-      <div className="bg-white p-6 rounded-xl shadow w-96">
+    <main className="min-h-screen flex items-center justify-center bg-white text-black">
+      <div className="bg-white p-6 rounded-xl shadow w-96 border">
 
-        <h1 className="text-xl font-bold mb-4">Student Register</h1>
+        <h1 className="text-xl font-bold mb-4 text-black">
+          Student Register
+        </h1>
 
         <input
           placeholder="Full name"
-          className="w-full border p-2 mb-2"
+          className="w-full border p-2 mb-2 text-black bg-white"
           onChange={(e) => setName(e.target.value)}
         />
 
         <input
           placeholder="Email"
-          className="w-full border p-2 mb-2"
+          className="w-full border p-2 mb-2 text-black bg-white"
           onChange={(e) => setEmail(e.target.value)}
         />
 
         <input
           type="password"
           placeholder="Password"
-          className="w-full border p-2 mb-2"
+          className="w-full border p-2 mb-2 text-black bg-white"
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        {/* 🔥 NIVEAU */}
         <select
-          className="w-full border p-2 mb-3"
+          className="w-full border p-2 mb-3 text-black bg-white"
           value={level}
           onChange={(e) => setLevel(e.target.value)}
         >
@@ -81,9 +77,8 @@ export default function Register() {
         <button
           onClick={handleRegister}
           className="bg-red-600 text-white w-full p-2"
-          disabled={loading}
         >
-          {loading ? "Creating..." : "Register"}
+          Register
         </button>
 
       </div>
