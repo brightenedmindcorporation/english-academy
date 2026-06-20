@@ -31,6 +31,8 @@ export default function AdminPage() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log("ADMIN USER:", user?.email);
+
       if (user && user.email === "brightenedmindcorporation@gmail.com") {
         setAuthorized(true);
       } else {
@@ -56,11 +58,15 @@ export default function AdminPage() {
   };
 
   const sendEmail = async (email: string, name: string, matricule: string) => {
-    await fetch("/api/send-email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, name, matricule }),
-    });
+    try {
+      await fetch("/api/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, name, matricule }),
+      });
+    } catch (error) {
+      console.error("EMAIL ERROR:", error);
+    }
   };
 
   const approveStudent = async (student: any, index: number) => {
@@ -127,8 +133,10 @@ export default function AdminPage() {
       ) : (
         students.map((s, index) => (
           <div key={s.id} className="bg-white p-5 mb-4 rounded-xl shadow">
+
             <p><b>Name:</b> {s.name}</p>
             <p><b>Email:</b> {s.email}</p>
+            <p><b>Level:</b> {s.level}</p>
             <p><b>Status:</b> {s.status}</p>
             <p><b>Matricule:</b> {s.matricule || "-"}</p>
 
@@ -147,6 +155,7 @@ export default function AdminPage() {
                 Reject
               </button>
             </div>
+
           </div>
         ))
       )}
