@@ -15,60 +15,62 @@ export default function Login() {
   const router = useRouter();
 
   const handleLogin = async () => {
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      // 🔐 1. Firebase auth
-      const userCred = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+    const userCred = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
-      const user = userCred.user;
+    const user = userCred.user;
 
-      // 📦 2. Firestore student data
-      const snap = await getDoc(doc(db, "students", user.uid));
+    console.log("USER LOGGED:", user.uid);
 
-      if (!snap.exists()) {
-        alert("Account not found in database");
-        return;
-      }
+    const snap = await getDoc(doc(db, "students", user.uid));
 
-      const data = snap.data();
-
-      // 🚫 3. Not approved check
-      if (data.status !== "Approved") {
-        alert("Account not approved by admin");
-        return;
-      }
-
-      // 🔑 4. Matricule check
-      if (!matricule) {
-        alert("Please enter your matricule");
-        return;
-      }
-
-      if (data.matricule !== matricule) {
-        alert("Invalid matricule");
-        return;
-      }
-
-      // 🚀 5. Redirect by level
-      if (data.level === "Level 1") {
-        router.push("/level1");
-      } else if (data.level === "Level 2") {
-        router.push("/level2");
-      } else {
-        router.push("/dashboard");
-      }
-
-    } catch (error: any) {
-      alert(error.message);
-    } finally {
-      setLoading(false);
+    if (!snap.exists()) {
+      alert("Student record not found in Firestore");
+      return;
     }
-  };
+
+    const data = snap.data();
+
+    console.log("STUDENT DATA:", data);
+
+    // 🚫 check approval
+    if (data.status !== "Approved") {
+      alert("Account not approved by admin");
+      return;
+    }
+
+    // 🚫 check matricule
+    if (!matricule || data.matricule !== matricule) {
+      alert("Invalid matricule");
+      return;
+    }
+
+    // 🚀 REDIRECTION FORCÉE
+    const level = data.level?.toLowerCase();
+
+    if (level === "level 1") {
+      router.push("/level1");
+    } else if (level === "level 2") {
+      router.push("/level2");
+    } else if (level === "level 3") {
+      router.push("/level3");
+    } else {
+      router.push("/dashboard");
+    }
+
+  } catch (error: any) {
+    console.error(error);
+    alert(error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-red-50 px-4">
