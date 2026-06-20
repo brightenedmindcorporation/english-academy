@@ -1,44 +1,82 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { auth, db } from "@/lib/firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { useRouter } from "next/navigation";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 export default function Dashboard() {
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
+  const [student, setStudent] = useState<any | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (u) => {
-      if (u) {
-        setUser(u);
+    const data = localStorage.getItem("loggedStudent");
 
-        const docRef = doc(db, "students", u.uid);
-        const snap = await getDoc(docRef);
+    if (!data) {
+      router.replace("/login");
+      return;
+    }
 
-        setProfile(snap.data());
-      } else {
-        setUser(null);
-      }
-    });
+    setStudent(JSON.parse(data));
+  }, [router]);
 
-    return () => unsub();
-  }, []);
+  const logout = async () => {
+    await signOut(auth);
 
-  if (!user) return <p>Please login...</p>;
+    localStorage.removeItem("loggedStudent");
+
+    // 🔥 IMPORTANT : vider state AVANT redirect
+    setStudent(null);
+
+    router.replace("/login");
+  };
+
+  // 🔥 SI PAS DE STUDENT → ON N'AFFICHE RIEN DU TOUT
+  if (!student) {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        Redirecting...
+      </main>
+    );
+  }
 
   return (
-    <main className="p-10">
+    <main className="min-h-screen bg-red-50 p-8 text-black">
 
-      <h1 className="text-2xl font-bold">
-        Welcome {profile?.name}
-      </h1>
+      <div className="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow">
 
-      <p>Email: {profile?.email}</p>
-      <p>Level: {profile?.level}</p>
-      <p>Matricule: {profile?.matricule || "Not assigned yet"}</p>
+        <h1 className="text-3xl font-bold text-red-700 mb-6">
+          Welcome {student.name}
+        </h1>
 
+        <p><b>Email:</b> {student.email}</p>
+        <p><b>Matricule:</b> {student.matricule}</p>
+        <p><b>Level:</b> {student.level}</p>
+        <p><b>Status:</b> {student.status}</p>
+
+        <div className="mt-6 flex gap-4">
+
+          <button
+            onClick={() => {
+              if (student.level === "Level 1") router.push("/level1");
+              if (student.level === "Level 2") router.push("/level2");
+              if (student.level === "Level 3") router.push("/level3");
+            }}
+            className="bg-green-600 text-white px-4 py-2 rounded"
+          >
+            Start Lessons
+          </button>
+
+          <button
+            onClick={logout}
+            className="bg-red-600 text-white px-4 py-2 rounded"
+          >
+            Logout
+          </button>
+
+        </div>
+
+      </div>
     </main>
   );
 }
