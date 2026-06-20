@@ -104,7 +104,7 @@ export default function AdminPage() {
 
   if (checking) {
     return (
-      <main className="flex items-center justify-center min-h-screen">
+      <main className="flex items-center justify-center min-h-screen bg-white text-black">
         Loading...
       </main>
     );
@@ -112,7 +112,7 @@ export default function AdminPage() {
 
   if (!authorized) {
     return (
-      <main className="flex items-center justify-center min-h-screen">
+      <main className="flex items-center justify-center min-h-screen bg-white text-black">
         <h1 className="text-3xl font-bold text-red-600">
           Access Denied
         </h1>
@@ -121,19 +121,21 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="p-10 bg-gray-100 min-h-screen text-black">
-      <h1 className="text-3xl font-bold mb-6">
+    <main className="p-10 min-h-screen bg-white text-black">
+      <h1 className="text-3xl font-bold mb-6 text-black">
         Admin Panel
       </h1>
 
       {students.length === 0 ? (
-        <div className="bg-white p-4 rounded shadow">
+        <div className="p-4 border bg-white text-black">
           No students found in Firestore
         </div>
       ) : (
         students.map((s, index) => (
-          <div key={s.id} className="bg-white p-5 mb-4 rounded-xl shadow">
-
+          <div
+            key={s.id}
+            className="p-5 mb-4 border bg-white text-black"
+          >
             <p><b>Name:</b> {s.name}</p>
             <p><b>Email:</b> {s.email}</p>
             <p><b>Level:</b> {s.level}</p>
@@ -143,19 +145,18 @@ export default function AdminPage() {
             <div className="flex gap-3 mt-4">
               <button
                 onClick={() => approveStudent(s, index)}
-                className="bg-green-600 text-white px-4 py-2 rounded"
+                className="bg-green-600 text-white px-4 py-2"
               >
                 Approve
               </button>
 
               <button
                 onClick={() => rejectStudent(s)}
-                className="bg-red-600 text-white px-4 py-2 rounded"
+                className="bg-red-600 text-white px-4 py-2"
               >
                 Reject
               </button>
             </div>
-
           </div>
         ))
       )}
