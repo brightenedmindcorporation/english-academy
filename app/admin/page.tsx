@@ -57,36 +57,73 @@ export default function AdminPage() {
     return `BMCA-${year}-${number}`;
   };
 
-  const sendEmail = async (email: string, name: string, matricule: string) => {
-    try {
-      await fetch("/api/send-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, name, matricule }),
-      });
-    } catch (error) {
-      console.error("EMAIL ERROR:", error);
-    }
+  const sendEmail = async (
+  email: string,
+  name: string,
+  matricule: string
+  ) => {
+  const response = await fetch("/api/send-email", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      name,
+      matricule,
+    }),
+  });
+
+  const result = await response.json();
+
+  console.log(result);
+
+  if (!response.ok) {
+    throw new Error(result.error || "Email failed");
+  }
+
+  return result;
   };
 
-  const approveStudent = async (student: any, index: number) => {
+  const approveStudent = async (student: any) => {
+  try {
+    const snapshot = await getDocs(collection(db, "students"));
+
+    const approvedStudents = snapshot.docs.filter(
+      (d) => d.data().status === "Approved"
+    );
+
+    const nextNumber = approvedStudents.length + 1;
+
+    const matricule = `BMCA-${new Date().getFullYear()}-${String(
+      nextNumber
+    ).padStart(3, "0")}`;
+
+    await updateDoc(doc(db, "students", student.id), {
+      status: "Approved",
+      matricule,
+    });
+
     try {
-      const matricule = generateMatricule(index);
-
-      await updateDoc(doc(db, "students", student.id), {
-        status: "Approved",
-        matricule,
-      });
-
-      await sendEmail(student.email, student.name, matricule);
+      await sendEmail(
+        student.email,
+        student.name,
+        matricule
+      );
 
       alert("Approved + Email sent!");
-      fetchStudents();
-    } catch (error) {
-      console.error(error);
-      alert("Error approving student");
+    } catch (emailError) {
+      console.error("EMAIL ERROR:", emailError);
+
+      alert("Student approved but email failed");
     }
-  };
+
+    fetchStudents();
+  } catch (error) {
+    console.error(error);
+    alert("Error approving student");
+  }
+};
 
   const rejectStudent = async (student: any) => {
     try {
@@ -144,7 +181,7 @@ export default function AdminPage() {
 
             <div className="flex gap-3 mt-4">
               <button
-                onClick={() => approveStudent(s, index)}
+                onClick={() => approveStudent(s)}
                 className="bg-green-600 text-white px-4 py-2"
               >
                 Approve
